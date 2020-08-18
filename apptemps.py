@@ -75,7 +75,7 @@ class AppTemps:
 
         #creem l'etiqueta que mostrarà el nom de la ciutat
         self.nom = ttk.Label(self.marc_dret, font = "Gabriola 20")
-        self.nom.grid(row = 0, column = 0, columnspan = 2, pady = 15)
+        self.nom.grid(row = 0, column = 0, columnspan = 2, pady = 15, padx = 30)
 
         #creem l'etiqueta que mostrarà la icona i carreguem el diccionari amb les possibles icones
         self.icona = ttk.Label(self.marc_dret)
