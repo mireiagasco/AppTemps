@@ -17,13 +17,18 @@ def obtenir_clima(ciutat, et_nom, et_icona, et_temp, et_desc, et_realfeel, icone
 
     #comprovem que s'ha pogut obtenir la ciutat
     if clima.get("cod", "404") == "404":
+        et_nom["text"] = " "
         et_desc["text"] = "No s'ha pogut trobar la ciutat"
+        et_temp["text"] = " "
+        et_realfeel["text"] = " "
+        et_icona["image"] = icones["error"]
+
     else:
         #mostrem les dades que ens interessen
         et_nom["text"] = "{}, {}".format(clima["name"], clima["sys"]["country"])
         et_desc["text"] = clima["weather"][0]["description"].title()
         et_temp["text"] = "{}ºC".format(clima["main"]["temp"])
-        et_realfeel["text"] = "Real Feel: {}ºC".format(clima["main"]["feels_like"])
+        et_realfeel["text"] = "Real Feel:   {}ºC".format(clima["main"]["feels_like"])
         
         info = clima["weather"][0]["icon"]
         num_icona = info[0:2]
@@ -39,7 +44,7 @@ class AppTemps:
         self.finestra_principal.get_themes()
         self.finestra_principal.set_theme("breeze")
         self.finestra_principal.title("App del Temps")
-        self.finestra_principal.iconbitmap(r"icona_apptemps.ico")
+        self.finestra_principal.iconbitmap(r"icones\icona_apptemps.ico")
 
         #creem els marcs que utilitzarem
         self.marc_esquerre = Frame(self.finestra_principal, height = 400, width = 350)
@@ -85,8 +90,9 @@ class AppTemps:
         neu = PhotoImage(file = r"icones\neu.png")
         tempesta = PhotoImage(file = r"icones\tempesta.png")
         pluja = PhotoImage(file = r"icones\pluja.png")
+        cara_trista = PhotoImage(file = r"icones\sad.png")
         
-        icones = {"01" : sol, "02" : sol_nuvol, "03" : algun_nuvol, "04" : molts_nuvols, "09" : pluja, "10" : sol_pluja, "11" : tempesta, "13" : neu, "50" : boira}
+        icones = {"01" : sol, "02" : sol_nuvol, "03" : algun_nuvol, "04" : molts_nuvols, "09" : pluja, "10" : sol_pluja, "11" : tempesta, "13" : neu, "50" : boira, "error" : cara_trista}
 
         #creem l'etiqueta que mostrarà la temperatura
         self.temperatura = ttk.Label(self.marc_dret, font = "Gabriola 25")
@@ -107,7 +113,3 @@ class AppTemps:
     def iniciar_app(self):
         self.finestra_principal.mainloop()
     
-
-    
-
-
