@@ -1,4 +1,4 @@
-from apptemps import *
+from apptemps import AppTemps
 
 app = AppTemps()
 app.iniciar_app()
