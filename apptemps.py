@@ -92,7 +92,7 @@ class AppTemps:
         pluja = PhotoImage(file = r"icones\pluja.png")
         cara_trista = PhotoImage(file = r"icones\sad.png")
         
-        icones = {"01" : sol, "02" : sol_nuvol, "03" : algun_nuvol, "04" : molts_nuvols, "09" : pluja, "10" : sol_pluja, "11" : tempesta, "13" : neu, "50" : boira, "error" : cara_trista}
+        icones = {"01" : sol, "02" : algun_nuvol, "03" : sol_nuvol, "04" : molts_nuvols, "09" : pluja, "10" : sol_pluja, "11" : tempesta, "13" : neu, "50" : boira, "error" : cara_trista}
 
         #creem l'etiqueta que mostrarà la temperatura
         self.temperatura = ttk.Label(self.marc_dret, font = "Gabriola 25")
