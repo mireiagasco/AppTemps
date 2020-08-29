@@ -2,40 +2,8 @@ from tkinter import *
 from tkinter import ttk
 from ttkthemes import themed_tk as tk          
 import requests
-from tkinter import messagebox
+import geocoder
 
-#funció que obté el clima
-def obtenir_clima(ciutat, et_nom, et_icona, et_temp, et_desc, et_realfeel, icones):
-    #creem les variables amb les dades que ens calen per accedir al servidor
-    api_key = "7f2fb91cddee2e58c5056c046d7f6046"
-    url = "http://api.openweathermap.org/data/2.5/weather"
-    dic_param = {"AppID" : api_key, "q" : ciutat, "units" : "metric", "lang" : "sp"}
-
-    #accedim al servidor i en desem la resposta en format json
-    resposta = requests.get(url, params = dic_param)
-    clima = resposta.json()
-
-    #comprovem que s'ha pogut obtenir la ciutat
-    if clima.get("cod", "404") == "404":
-        et_nom["text"] = " "
-        et_desc["text"] = "No s'ha pogut trobar la ciutat"
-        et_temp["text"] = " "
-        et_realfeel["text"] = " "
-        et_icona["image"] = icones["error"]
-
-    else:
-        #mostrem les dades que ens interessen
-        et_nom["text"] = "{}, {}".format(clima["name"], clima["sys"]["country"])
-        et_desc["text"] = clima["weather"][0]["description"].title()
-        et_temp["text"] = "{}ºC".format(clima["main"]["temp"])
-        et_realfeel["text"] = "Real Feel:   {}ºC".format(clima["main"]["feels_like"])
-        
-        info = clima["weather"][0]["icon"]
-        num_icona = info[0:2]
-        et_icona["image"] = icones[num_icona]
-
-
-    
 class AppTemps:
 
     def __init__(self):
@@ -57,12 +25,10 @@ class AppTemps:
         self.marc_dret.grid(row = 0, column = 2)
 
         #creem l'etiqueta de benvinguda
-        self.etiq_benv = ttk.Label(self.marc_esquerre, text = "Benvingut/da!", font = "Gabriola 20 bold")
-        self.etiq_benv.pack(pady = 15, padx = 15)
+        ttk.Label(self.marc_esquerre, text = "Benvingut/da!", font = "Gabriola 20 bold").pack(pady = 15, padx = 15)
 
         #creem l'etiqueta que ens indica què fer
-        self.etiq_instruccions = ttk.Label(self.marc_esquerre, text = "Introdueixi el nom de la ciutat que vulgui:", font = "Gabriola 15")
-        self.etiq_instruccions.pack(pady = 10, padx = 10)
+        ttk.Label(self.marc_esquerre, text = "Introdueixi el nom de la ciutat que vulgui:", font = "Gabriola 15").pack(pady = 10, padx = 10)
 
         #creem l'entrada de text
         self.entrada_ciutat = ttk.Entry(self.marc_esquerre, justify = "center")
@@ -92,7 +58,7 @@ class AppTemps:
         pluja = PhotoImage(file = r"icones\pluja.png")
         cara_trista = PhotoImage(file = r"icones\sad.png")
         
-        icones = {"01" : sol, "02" : algun_nuvol, "03" : sol_nuvol, "04" : molts_nuvols, "09" : pluja, "10" : sol_pluja, "11" : tempesta, "13" : neu, "50" : boira, "error" : cara_trista}
+        self.icones = {"01" : sol, "02" : algun_nuvol, "03" : sol_nuvol, "04" : molts_nuvols, "09" : pluja, "10" : sol_pluja, "11" : tempesta, "13" : neu, "50" : boira, "error" : cara_trista}
 
         #creem l'etiqueta que mostrarà la temperatura
         self.temperatura = ttk.Label(self.marc_dret, font = "Gabriola 25")
@@ -107,9 +73,58 @@ class AppTemps:
         self.real_feel.grid(row = 2, column = 1, pady = 10, padx = 10)
 
         #creem el botó per obtenir el clima
-        self.boto_clima = ttk.Button(self.marc_esquerre, text = "Obtenir predicció", command = lambda : obtenir_clima(self.entrada_ciutat.get(), self.nom, self.icona, self.temperatura, self.descripcio, self.real_feel, icones))
-        self.boto_clima.pack(pady = 5, padx = 10)
+        ttk.Button(self.marc_esquerre, text = "Obtenir predicció", command = lambda : self.obtenir_clima(lat = None, lon = None)).pack(pady = 5, padx = 10)
 
+        
     def iniciar_app(self):
+
+        #mostrem el temps local
+        localitzacio = geocoder.ip('me')
+        localitzacio = localitzacio.latlng
+        self.obtenir_clima(lat = localitzacio[0], lon = localitzacio[1])
+
+        #iniciem la finestra
         self.finestra_principal.mainloop()
+
+    #funció que obté el clima i la previsió i ho mostra tot
+    def obtenir_clima(self, lat, lon):
+        
+        #creem les variables amb les dades que ens calen per accedir al servidor
+        api_key = "7f2fb91cddee2e58c5056c046d7f6046"
+        url = "http://api.openweathermap.org/data/2.5/weather"
+
+        ciutat = self.entrada_ciutat.get()
+
+        #si busquem per latitud i longitud
+        if ciutat == None:
+            dic_param = {"AppID" : api_key, "lat" : lat, "lon" : lon, "units" : "metric", "lang" : "ca"}    
+        else:
+            dic_param = {"AppID" : api_key, "q" : ciutat, "units" : "metric", "lang" : "ca"}
+
+        #accedim al servidor i en desem la resposta en format json
+        resposta = requests.get(url, params = dic_param)
+        clima = resposta.json()
+
+        #si no troba la ciutat mostrem un error
+        if str(clima.get("cod", "404"))[0] == "4":
+            self.nom["text"] = " "
+            self.descripcio["text"] = "No s'ha pogut trobar la ciutat"
+            self.temperatura["text"] = " "
+            self.real_feel["text"] = " "
+            self.icona["image"] = self.icones["error"]
+
+        #si troba la ciutat, mostrem les dades
+        else:       
+            self.nom["text"] = "{}, {}".format(clima["name"], clima["sys"]["country"])
+            self.descripcio["text"] = clima["weather"][0]["description"].title()
+            self.temperatura["text"] = "{}ºC".format(clima["main"]["temp"])
+            self.real_feel["text"] = "Real Feel:   {}ºC".format(clima["main"]["feels_like"])
+        
+            info = clima["weather"][0]["icon"]
+            num_icona = info[0:2]
+            self.icona["image"] = self.icones[num_icona]
+
+            lat = clima["coord"]["lat"]
+            lon = clima["coord"]["lon"]
     
+
